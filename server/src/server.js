@@ -14,10 +14,12 @@ app.use(express.json());
 // Routes
 const authRoutes = require('./routes/authRoutes');
 const mlefRoutes = require('./routes/mlefRoutes');
+const pmrRoutes = require('./routes/pmrRoutes');
 app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/cases', caseRoutes);
 app.use('/api/mlef', mlefRoutes);
+app.use('/api/pmr', pmrRoutes);
 
 // Start Server on Port 5005
 const PORT = process.env.PORT || 5005;
