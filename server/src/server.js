@@ -17,6 +17,9 @@ const mlefRoutes = require('./routes/mlefRoutes');
 const pmrRoutes = require('./routes/pmrRoutes');
 const investigationsRoutes = require('./routes/investigationsRoutes');
 const legalRoutes = require('./routes/legalRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const searchRoutes = require('./routes/searchRoutes');
+const reportRoutes = require('./routes/reportRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
@@ -25,6 +28,9 @@ app.use('/api/mlef', mlefRoutes);
 app.use('/api/pmr', pmrRoutes);
 app.use('/api/investigations', investigationsRoutes);
 app.use('/api/legal', legalRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/reports', reportRoutes);
 
 // Start Server on Port 5005
 const PORT = process.env.PORT || 5005;

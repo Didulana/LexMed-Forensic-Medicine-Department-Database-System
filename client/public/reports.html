@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexMed | Report Generation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar-brand { font-weight: bold; letter-spacing: 1px; }
+        .report-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px;}
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; }
+            .report-card { box-shadow: none; border: 1px solid #ccc; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm no-print">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="dashboard.html">LexMed System</a>
+            <div class="d-flex">
+                <a href="dashboard.html" class="btn btn-outline-light btn-sm">Back to Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5 mb-5">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+            <h2 class="text-secondary"><i class="fas fa-file-alt"></i> Department Reports</h2>
+            <button class="btn btn-secondary" onclick="window.print()"><i class="fas fa-print"></i> Print Reports</button>
+        </div>
+
+        <div class="row">
+            <!-- Monthly Stats Report -->
+            <div class="col-md-4">
+                <div class="report-card border-top border-4 border-primary">
+                    <h5 class="text-primary mb-3">Monthly Statistics</h5>
+                    <p class="text-muted small">Aggregated totals for the current month.</p>
+                    <table class="table table-bordered table-sm" id="monthlyTable">
+                        <thead class="table-light">
+                            <tr><th>Case Type</th><th>Count</th></tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pending Cases Report -->
+            <div class="col-md-8">
+                <div class="report-card border-top border-4 border-danger">
+                    <h5 class="text-danger mb-3">Pending Cases (Open)</h5>
+                    <p class="text-muted small">List of all currently open cases requiring examination.</p>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle" id="pendingTable">
+                            <thead class="table-light">
+                                <tr><th>Case ID</th><th>Patient Name</th><th>Type</th><th>Incident Date</th></tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Daily Report -->
+            <div class="col-md-12">
+                <div class="report-card border-top border-4 border-success">
+                    <h5 class="text-success mb-3">Daily Case Report (Today)</h5>
+                    <p class="text-muted small">All forensic cases opened today.</p>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped align-middle" id="dailyTable">
+                            <thead class="table-light">
+                                <tr><th>Case ID</th><th>Patient Name</th><th>Type</th><th>Status</th><th>Incident Time</th></tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="js/reports.js"></script>
+</body>
+</html>
