@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexMed | Dashboard</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f7f6; }
+        .navbar-brand { font-weight: bold; letter-spacing: 1px; }
+        .card { transition: transform 0.2s; border: none; border-radius: 10px; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="#">LexMed System</a>
+            <div class="d-flex align-items-center">
+                <span class="navbar-text me-4 text-white" id="userGreeting">Loading user...</span>
+                <button class="btn btn-outline-danger btn-sm" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Workspace -->
+    <div class="container mt-5">
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <h2 class="text-secondary">Workspace Overview</h2>
+                <hr>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- New Case Intake Card -->
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100 p-3">
+                    <div class="card-body text-center">
+                        <h4 class="card-title text-primary mb-3">Case Intake</h4>
+                        <p class="card-text text-muted mb-4">Register a new patient, record hospital admission details, and open a new forensic case.</p>
+                        <a href="intake.html" class="btn btn-primary w-100">Start New Case</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending MLEF Card -->
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100 p-3">
+                    <div class="card-body text-center">
+                        <h4 class="card-title text-success mb-3">Clinical Exams</h4>
+                        <p class="card-text text-muted mb-4">Access pending Medico-Legal Examination Forms (MLEF) and map patient injuries.</p>
+                        <!-- UPDATED LINE BELOW -->
+                        <a href="pending-cases.html" class="btn btn-success w-100">View Pending Exams</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Dashboard Logic -->
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
