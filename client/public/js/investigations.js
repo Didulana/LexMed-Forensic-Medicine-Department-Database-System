@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const alertBox = document.getElementById('alert-box');
 
     function showAlert(message, isSuccess) {
-        alertBox.className = \`alert alert-\${isSuccess ? 'success' : 'danger'}\`;
+        alertBox.className = `alert alert-\${isSuccess ? 'success' : 'danger'}`;
         alertBox.textContent = message;
         alertBox.classList.remove('d-none');
         window.scrollTo(0, 0);
@@ -25,10 +25,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json();
             if (data.success) {
-                showAlert(\`Success: \${data.message} (Scan ID: \${data.data.scan_id})\`, true);
+                showAlert(`Success: \${data.message} (Scan ID: \${data.data.scan_id})`, true);
                 e.target.reset();
             } else {
-                showAlert(\`Error: \${data.message}\`, false);
+                showAlert(`Error: \${data.message}`, false);
             }
         } catch (err) {
             showAlert('Network error.', false);
@@ -52,10 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json();
             if (data.success) {
-                showAlert(\`Success: \${data.message} (Tox ID: \${data.data.tox_id})\`, true);
+                showAlert(`Success: \${data.message} (Tox ID: \${data.data.tox_id})`, true);
                 e.target.reset();
             } else {
-                showAlert(\`Error: \${data.message}\`, false);
+                showAlert(`Error: \${data.message}`, false);
             }
         } catch (err) {
             showAlert('Network error.', false);

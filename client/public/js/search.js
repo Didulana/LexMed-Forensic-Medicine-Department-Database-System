@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!query) return;
 
         try {
-            const response = await fetch(\`http://localhost:5005/api/search?q=\${encodeURIComponent(query)}\`);
+            const response = await fetch(`http://localhost:5005/api/search?q=\${encodeURIComponent(query)}`);
             const result = await response.json();
 
             resultsContainer.classList.remove('d-none');
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(item.case_type === 'Clinical Exam') viewLink = 'mlef-form.html';
                     if(item.case_type === 'Postmortem') viewLink = 'pmr-form.html';
 
-                    tr.innerHTML = \`
+                    tr.innerHTML = `
                         <td><strong>#\${item.case_id}</strong></td>
                         <td><span class="badge \${item.case_type === 'Postmortem' ? 'bg-success' : 'bg-primary'}">\${item.case_type}</span></td>
                         <td>\${item.status}</td>
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>\${item.nic_passport}</td>
                         <td>\${date}</td>
                         <td><a href="\${viewLink}" class="btn btn-sm btn-outline-dark">Open</a></td>
-                    \`;
+                    `;
                     tbody.appendChild(tr);
                 });
             } else {

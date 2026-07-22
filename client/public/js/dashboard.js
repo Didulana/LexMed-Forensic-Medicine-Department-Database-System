@@ -13,9 +13,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const greetingElement = document.getElementById('userGreeting');
     
     if (user.role === 'JMO') {
-        greetingElement.textContent = \`Welcome, Dr. \${user.username} (\${user.role})\`;
+        greetingElement.textContent = `Welcome, Dr. \${user.username} (\${user.role})`;
     } else {
-        greetingElement.textContent = \`Welcome, \${user.username} (\${user.role})\`;
+        greetingElement.textContent = `Welcome, \${user.username} (\${user.role})`;
     }
 
     // 3. Logout Functionality

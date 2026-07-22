@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const tbody = document.querySelector('#monthlyTable tbody');
         if (data.success && data.data.length > 0) {
             data.data.forEach(row => {
-                tbody.innerHTML += \`<tr><td>\${row.case_type}</td><td>\${row.count}</td></tr>\`;
+                tbody.innerHTML += `<tr><td>\${row.case_type}</td><td>\${row.count}</td></tr>`;
             });
         } else {
             tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted">No data for this month.</td></tr>';
@@ -22,12 +22,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (data.success && data.data.length > 0) {
             data.data.forEach(row => {
                 const date = new Date(row.incident_time).toLocaleDateString();
-                tbody.innerHTML += \`<tr>
+                tbody.innerHTML += `<tr>
                     <td>#\${row.case_id}</td>
                     <td>\${row.first_name}</td>
                     <td><span class="badge bg-secondary">\${row.case_type}</span></td>
                     <td>\${date}</td>
-                </tr>\`;
+                </tr>`;
             });
         } else {
             tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No pending cases.</td></tr>';
@@ -42,13 +42,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (data.success && data.data.length > 0) {
             data.data.forEach(row => {
                 const time = new Date(row.incident_time).toLocaleTimeString();
-                tbody.innerHTML += \`<tr>
+                tbody.innerHTML += `<tr>
                     <td>#\${row.case_id}</td>
                     <td>\${row.first_name}</td>
                     <td>\${row.case_type}</td>
                     <td>\${row.status}</td>
                     <td>\${time}</td>
-                </tr>\`;
+                </tr>`;
             });
         } else {
             tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No cases opened today.</td></tr>';

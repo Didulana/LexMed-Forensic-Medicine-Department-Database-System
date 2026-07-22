@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const alertBox = document.getElementById('alert-box');
 
     function showAlert(message, isSuccess) {
-        alertBox.className = \`alert alert-\${isSuccess ? 'success' : 'danger'}\`;
+        alertBox.className = `alert alert-\${isSuccess ? 'success' : 'danger'}`;
         alertBox.textContent = message;
         alertBox.classList.remove('d-none');
         window.scrollTo(0, 0);
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showAlert(data.message + ': Success!', true);
                 event.target.reset();
             } else {
-                showAlert(\`Error: \${data.message}\`, false);
+                showAlert(`Error: \${data.message}`, false);
             }
         } catch (err) {
             showAlert('Network error.', false);

@@ -7,10 +7,10 @@ exports.search = async (req, res) => {
     }
 
     try {
-        const searchTerm = \`%\${q}%\`;
+        const searchTerm = `%\${q}%`;
         
         // Search across patients and cases
-        const query = \`
+        const query = `
             SELECT 
                 c.case_id, c.case_type, c.status, c.incident_time,
                 p.patient_id, p.first_name, p.nic_passport, p.dob, p.gender
@@ -20,7 +20,7 @@ exports.search = async (req, res) => {
                OR p.nic_passport LIKE ? 
                OR p.first_name LIKE ?
             ORDER BY c.incident_time DESC
-        \`;
+        `;
 
         // If q is not a number, case_id search might fail or just return empty for that condition. 
         // We can safely pass it.
