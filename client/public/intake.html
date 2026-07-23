@@ -27,13 +27,13 @@
     <div class="container mt-5 mb-5">
         <div class="row justify-content-center">
             <div class="col-md-8">
-                <h3 class="mb-4">Step 1: Patient Registration</h3>
+                <h3 class="mb-4">Case & Patient Intake</h3>
                 
                 <div id="alert-box" class="alert d-none" role="alert"></div>
 
-                <!-- STEP 1: Patient Form Card -->
                 <div class="form-card">
-                    <form id="patientForm">
+                    <form id="intakeForm">
+                        <h5 class="mb-3 text-primary">Patient Details</h5>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">NIC / Passport Number</label>
@@ -41,69 +41,33 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Full Name</label>
-                                <input type="text" id="firstName" class="form-control" required placeholder="John Doe">
+                                <input type="text" id="patientName" class="form-control" required placeholder="John Doe">
                             </div>
                         </div>
 
+                        <hr class="my-4">
+                        <h5 class="mb-3 text-primary">Case Details</h5>
+                        
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Date of Birth</label>
-                                <input type="date" id="dob" class="form-control" required>
+                                <label class="form-label">Case Number</label>
+                                <input type="text" id="caseNumber" class="form-control" required placeholder="e.g., JMO/2026/001">
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Gender</label>
-                                <select id="gender" class="form-select" required>
-                                    <option value="" disabled selected>Select gender...</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                    <option value="Other">Other</option>
+                                <label class="form-label">Case Category</label>
+                                <select id="caseType" class="form-select" required>
+                                    <option value="" disabled selected>Select category...</option>
+                                    <option value="Clinical">Clinical Exam (MLEF)</option>
+                                    <option value="Postmortem">Postmortem (PMR)</option>
+                                    <option value="Mixed">Mixed</option>
                                 </select>
                             </div>
                         </div>
 
                         <hr class="my-4">
-                        <button type="submit" class="btn btn-primary w-100">Register Patient & Continue</button>
+                        <button type="submit" class="btn btn-primary w-100">Register Case</button>
                     </form>
                 </div>
-
-                <!-- STEP 2: Case Details (Hidden by default) -->
-                <div id="step2-container" class="d-none mt-5">
-                    <h3 class="mb-4 text-primary">Step 2: Case Details</h3>
-                    <div class="form-card border-primary border-top border-4">
-                        <form id="caseForm">
-                            <!-- Hidden field to store the new Patient ID -->
-                            <input type="hidden" id="linkedPatientId">
-                            
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Case Category</label>
-                                    <select id="caseType" class="form-select" required>
-                                        <option value="" disabled selected>Select category...</option>
-                                        <option value="Clinical Exam">Clinical Exam (MLEF)</option>
-                                        <option value="Postmortem">Postmortem (PMR)</option>
-                                        <option value="Drunkenness">Drunkenness Exam</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Date & Time of Incident</label>
-                                    <input type="datetime-local" id="incidentTime" class="form-control" required>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-12 mb-4">
-                                    <label class="form-label">Escorting Police Officer</label>
-                                    <select id="officerSelect" class="form-select" required>
-                                        <option value="" disabled selected>Loading officers...</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <button type="submit" class="btn btn-success w-100">Open Forensic Case</button>
-                        </form>
-                    </div>
-                </div>
-
             </div>
         </div>
     </div>

@@ -27,30 +27,62 @@
     <div class="container mt-5">
         <div class="row">
             <div class="col-md-12">
-                <h3 class="mb-4 text-secondary">Pending Clinical Exams & Autopsies</h3>
+                <h3 class="mb-2 text-secondary" id="caseTitle">Case Timeline</h3>
+                <h5 class="mb-4 text-muted" id="patientInfo">Patient: Loading...</h5>
                 
-                <div class="table-card">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Case ID</th>
-                                <th>Patient Name</th>
-                                <th>NIC / Passport</th>
-                                <th>Escorting Officer</th>
-                                <th>Type</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="casesTableBody">
-                            <tr>
-                                <td colspan="6" class="text-center text-muted">Loading pending cases...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="list-group" id="timeline-menu">
+                            <a href="#clinical-exams" class="list-group-item list-group-item-action">Clinical Exams</a>
+                            <a href="#postmortem" class="list-group-item list-group-item-action">Postmortem</a>
+                            <a href="#evidence" class="list-group-item list-group-item-action">Chain of Custody</a>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <!-- Clinical Exams Section -->
+                        <div class="card mb-4" id="clinical-exams">
+                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                <span>Clinical Exams (MLEF)</span>
+                                <a href="mlef-form.html" class="btn btn-light btn-sm role-jmo-only">Add MLEF</a>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group" id="mlef-list">
+                                    <li class="list-group-item text-muted">Loading...</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Postmortem Section -->
+                        <div class="card mb-4" id="postmortem">
+                            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                                <span>Postmortem (PMR)</span>
+                                <a href="pmr-form.html" class="btn btn-light btn-sm role-jmo-only">Add PMR</a>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group" id="pmr-list">
+                                    <li class="list-group-item text-muted">Loading...</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Evidence Section -->
+                        <div class="card mb-4" id="evidence">
+                            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                                <span>Chain of Custody</span>
+                                <a href="legal-evidence-form.html" class="btn btn-dark btn-sm role-clerk-only">Transfer Evidence</a>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group" id="evidence-list">
+                                    <li class="list-group-item text-muted">Loading...</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    <script src="js/app.js"></script>
 
     <script src="js/pending.js"></script>
 </body>

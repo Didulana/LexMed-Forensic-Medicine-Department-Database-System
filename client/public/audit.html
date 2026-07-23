@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexMed | System Audit Log</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f7f6; }
+        .navbar-brand { font-weight: bold; letter-spacing: 1px; }
+        .form-card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="dashboard.html">LexMed System</a>
+            <div class="d-flex">
+                <a href="dashboard.html" class="btn btn-outline-light btn-sm">Back to Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5 mb-5">
+        <h3 class="mb-4 text-secondary">System Audit Log</h3>
+        
+        <div class="form-card border-top border-4 border-secondary">
+            
+            <form id="auditFilterForm" class="row gx-3 gy-2 align-items-center mb-4">
+                <div class="col-sm-3">
+                    <label class="visually-hidden">User ID</label>
+                    <input type="number" class="form-control" id="filterUserId" placeholder="User ID">
+                </div>
+                <div class="col-sm-3">
+                    <label class="visually-hidden">Start Date</label>
+                    <input type="date" class="form-control" id="filterStartDate">
+                </div>
+                <div class="col-sm-3">
+                    <label class="visually-hidden">End Date</label>
+                    <input type="date" class="form-control" id="filterEndDate">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Filter Logs</button>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Log ID</th>
+                            <th>Action Type</th>
+                            <th>Table Affected</th>
+                            <th>Record ID</th>
+                            <th>User ID</th>
+                            <th>Timestamp</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auditTableBody">
+                        <tr><td colspan="7" class="text-center text-muted">Loading logs...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Simple Pagination Demo -->
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <button class="btn btn-outline-secondary btn-sm" id="prevPage" disabled>Previous</button>
+                <span class="text-muted small">Page <span id="pageNum">1</span></span>
+                <button class="btn btn-outline-secondary btn-sm" id="nextPage">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('lexmed:ready', () => {
+            const user = window.lexmed.user;
+            if (!user) return;
+            if (user.role !== 'db_admin_role' && user.role !== 'auditor_role') {
+                document.querySelector('.container').innerHTML = `<div class="alert alert-danger mt-5">Access Denied.</div>`;
+                return;
+            }
+
+            let currentPage = 1;
+            const limit = 20;
+
+            const fetchLogs = async () => {
+                const userId = document.getElementById('filterUserId').value;
+                const start = document.getElementById('filterStartDate').value;
+                const end = document.getElementById('filterEndDate').value;
+                
+                const offset = (currentPage - 1) * limit;
+                
+                let query = `?limit=${limit}&offset=${offset}`;
+                if (userId) query += `&user_id=${userId}`;
+                if (start) query += `&start_date=${start}`;
+                if (end) query += `&end_date=${end}`;
+
+                const tbody = document.getElementById('auditTableBody');
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Loading...</td></tr>`;
+
+                try {
+                    const res = await window.lexmed.fetchAPI(`/admin/audit-log${query}`);
+                    if (!res.ok) throw new Error('Failed to fetch');
+                    const logs = await res.json();
+                    
+                    tbody.innerHTML = '';
+                    if (logs.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No logs found.</td></tr>`;
+                    }
+                    
+                    logs.forEach(log => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${log.log_id}</td>
+                            <td><span class="badge ${log.action_type === 'UPDATE' ? 'bg-warning text-dark' : log.action_type === 'INSERT' ? 'bg-success' : 'bg-danger'}">${log.action_type}</span></td>
+                            <td>${log.table_name}</td>
+                            <td>${log.record_id}</td>
+                            <td>${log.performed_by_user || 'System'}</td>
+                            <td>${new Date(log.action_timestamp).toLocaleString()}</td>
+                            <td style="max-width: 200px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title='${log.old_data} -> ${log.new_data}'>
+                                Old: ${log.old_data || 'None'}, New: ${log.new_data || 'None'}
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    
+                    document.getElementById('pageNum').textContent = currentPage;
+                    document.getElementById('prevPage').disabled = currentPage === 1;
+                    document.getElementById('nextPage').disabled = logs.length < limit;
+
+                } catch (err) {
+                    console.error(err);
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Error loading logs.</td></tr>`;
+                }
+            };
+
+            document.getElementById('auditFilterForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                currentPage = 1;
+                fetchLogs();
+            });
+
+            document.getElementById('prevPage').addEventListener('click', () => {
+                if (currentPage > 1) { currentPage--; fetchLogs(); }
+            });
+
+            document.getElementById('nextPage').addEventListener('click', () => {
+                currentPage++; fetchLogs();
+            });
+
+            // Initial load
+            fetchLogs();
+        });
+    </script>
+</body>
+</html>

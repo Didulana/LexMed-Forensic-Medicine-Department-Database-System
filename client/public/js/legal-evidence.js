@@ -1,64 +1,101 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('lexmed:ready', () => {
+    const user = window.lexmed.user;
+    if (!user) return;
+
+    if (user.role !== 'department_clerk_role') {
+        document.querySelector('.container').innerHTML = `<div class="alert alert-danger mt-5">Access Denied. Only Department Clerks can manage evidence.</div>`;
+        return;
+    }
+
     const alertBox = document.getElementById('alert-box');
 
-    function showAlert(message, isSuccess) {
-        alertBox.className = `alert alert-\${isSuccess ? 'success' : 'danger'}`;
-        alertBox.textContent = message;
-        alertBox.classList.remove('d-none');
-        window.scrollTo(0, 0);
-    }
+    // Handle searching for evidence trail
+    // Since Phase 2 didn't implement a GET /evidence/:id/trail endpoint,
+    // we will simulate fetching it, or show that it requires backend support.
+    document.getElementById('searchItemBtn').addEventListener('click', () => {
+        const itemId = document.getElementById('searchItemId').value;
+        if (!itemId) return;
 
-    async function submitForm(url, payload, successCallback, event) {
-        event.preventDefault();
+        // In a real app, fetch /evidence/:itemId
+        // For demo, just unlock the transfer form for this item.
+        document.getElementById('transferItemId').value = itemId;
+        document.getElementById('releasedBy').value = user.user_id;
+        document.getElementById('submitTransferBtn').disabled = false;
+        
+        document.getElementById('custodyTimeline').innerHTML = `
+            <li class="list-group-item">Item #${itemId} selected for transfer.</li>
+            <li class="list-group-item text-muted text-sm">Full trail view requires GET /evidence endpoint (Not implemented in Phase 2).</li>
+        `;
+    });
+
+    // Handle adding new evidence
+    document.getElementById('newEvidenceForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const caseId = document.getElementById('evCaseId').value;
+        const itemType = document.getElementById('evType').value;
+        const description = document.getElementById('evDesc').value;
+
         try {
-            const res = await fetch(url, {
+            const res = await window.lexmed.fetchAPI('/evidence', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({
+                    case_id: caseId,
+                    item_type: itemType,
+                    description: description,
+                    current_status: 'Retained' // Must be Retained initially
+                })
             });
+
             const data = await res.json();
-            if (data.success) {
-                showAlert(data.message + ': Success!', true);
-                event.target.reset();
+
+            if (res.ok) {
+                alertBox.className = 'alert alert-success d-block';
+                alertBox.textContent = `Evidence item logged successfully! Item ID: ${data.data.item_id}`;
+                document.getElementById('newEvidenceForm').reset();
             } else {
-                showAlert(`Error: \${data.message}`, false);
+                alertBox.className = 'alert alert-danger d-block';
+                alertBox.textContent = data.error || 'Failed to log evidence';
             }
         } catch (err) {
-            showAlert('Network error.', false);
+            alertBox.className = 'alert alert-danger d-block';
+            alertBox.textContent = 'Server error.';
         }
-    }
-
-    document.getElementById('evidenceForm').addEventListener('submit', (e) => {
-        submitForm('http://localhost:5005/api/legal/evidence', {
-            case_id: parseInt(document.getElementById('evCaseId').value),
-            item_type: document.getElementById('evType').value,
-            description: document.getElementById('evDesc').value,
-            current_status: document.getElementById('evStatus').value
-        }, null, e);
     });
 
-    document.getElementById('custodyForm').addEventListener('submit', (e) => {
-        submitForm('http://localhost:5005/api/legal/custody', {
-            item_id: parseInt(document.getElementById('cocItemId').value),
-            released_by_user: parseInt(document.getElementById('cocReleasedBy').value),
-            received_by_name: document.getElementById('cocReceivedBy').value
-        }, null, e);
-    });
+    // Handle Transfer
+    document.getElementById('transferForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    document.getElementById('summonsForm').addEventListener('submit', (e) => {
-        submitForm('http://localhost:5005/api/legal/summons', {
-            jmo_id: parseInt(document.getElementById('sumJmoId').value),
-            case_id: parseInt(document.getElementById('sumCaseId').value),
-            appearance_date: document.getElementById('sumDate').value,
-            status: document.getElementById('sumStatus').value
-        }, null, e);
-    });
+        const itemId = document.getElementById('transferItemId').value;
+        const receivedBy = document.getElementById('receivedBy').value;
+        const newStatus = document.getElementById('newStatus').value;
 
-    document.getElementById('documentForm').addEventListener('submit', (e) => {
-        submitForm('http://localhost:5005/api/legal/document', {
-            case_id: parseInt(document.getElementById('docCaseId').value),
-            doc_type: document.getElementById('docType').value,
-            reference_no: document.getElementById('docRef').value
-        }, null, e);
+        try {
+            const res = await window.lexmed.fetchAPI(`/evidence/${itemId}/transfer`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    received_by_name: receivedBy,
+                    new_status: newStatus
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alertBox.className = 'alert alert-success d-block';
+                alertBox.textContent = `Transfer logged successfully!`;
+                document.getElementById('transferForm').reset();
+                document.getElementById('submitTransferBtn').disabled = true;
+                document.getElementById('transferItemId').value = '';
+                document.getElementById('releasedBy').value = '';
+            } else {
+                alertBox.className = 'alert alert-danger d-block';
+                alertBox.textContent = data.error || 'Failed to transfer evidence';
+            }
+        } catch (err) {
+            alertBox.className = 'alert alert-danger d-block';
+            alertBox.textContent = 'Server error.';
+        }
     });
 });

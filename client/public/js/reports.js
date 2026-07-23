@@ -1,58 +1,134 @@
-document.addEventListener('DOMContentLoaded', async () => {
-    
-    // Fetch Monthly Stats
-    try {
-        const res = await fetch('http://localhost:5005/api/reports/monthly');
-        const data = await res.json();
-        const tbody = document.querySelector('#monthlyTable tbody');
-        if (data.success && data.data.length > 0) {
-            data.data.forEach(row => {
-                tbody.innerHTML += `<tr><td>\${row.case_type}</td><td>\${row.count}</td></tr>`;
-            });
-        } else {
-            tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted">No data for this month.</td></tr>';
-        }
-    } catch (err) { console.error(err); }
+document.addEventListener('lexmed:ready', async () => {
+    const user = window.lexmed.user;
+    if (!user) return;
 
-    // Fetch Pending Cases
     try {
-        const res = await fetch('http://localhost:5005/api/reports/pending');
-        const data = await res.json();
-        const tbody = document.querySelector('#pendingTable tbody');
-        if (data.success && data.data.length > 0) {
-            data.data.forEach(row => {
-                const date = new Date(row.incident_time).toLocaleDateString();
-                tbody.innerHTML += `<tr>
-                    <td>#\${row.case_id}</td>
-                    <td>\${row.first_name}</td>
-                    <td><span class="badge bg-secondary">\${row.case_type}</span></td>
-                    <td>\${date}</td>
-                </tr>`;
-            });
-        } else {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No pending cases.</td></tr>';
-        }
-    } catch (err) { console.error(err); }
-
-    // Fetch Daily Cases
-    try {
-        const res = await fetch('http://localhost:5005/api/reports/daily');
-        const data = await res.json();
-        const tbody = document.querySelector('#dailyTable tbody');
-        if (data.success && data.data.length > 0) {
-            data.data.forEach(row => {
-                const time = new Date(row.incident_time).toLocaleTimeString();
-                tbody.innerHTML += `<tr>
-                    <td>#\${row.case_id}</td>
-                    <td>\${row.first_name}</td>
-                    <td>\${row.case_type}</td>
-                    <td>\${row.status}</td>
-                    <td>\${time}</td>
-                </tr>`;
-            });
-        } else {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No cases opened today.</td></tr>';
-        }
-    } catch (err) { console.error(err); }
-
+        await Promise.all([
+            loadMonthlyStats(),
+            loadJmoCaseload(),
+            loadPendingCases(),
+            loadAnomalies()
+        ]);
+    } catch(err) {
+        console.error('Failed to load reports:', err);
+    }
 });
+
+async function loadMonthlyStats() {
+    const res = await window.lexmed.fetchAPI('/reports/monthly');
+    if (!res.ok) throw new Error('Failed to fetch monthly stats');
+    const { data } = await res.json();
+
+    const labels = [];
+    const counts = [];
+    
+    // Process data to array format for Chart.js
+    data.forEach(row => {
+        labels.push(`${row.report_month} (${row.case_type})`);
+        counts.push(row.total_cases);
+    });
+
+    const ctx = document.getElementById('monthlyChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Total Cases',
+                data: counts,
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+}
+
+async function loadJmoCaseload() {
+    const res = await window.lexmed.fetchAPI('/reports/jmo-caseload');
+    if (!res.ok) throw new Error('Failed to fetch jmo caseload');
+    const { data } = await res.json();
+
+    const labels = [];
+    const clinicalCounts = [];
+    const pmCounts = [];
+
+    data.forEach(row => {
+        labels.push(row.jmo_name);
+        clinicalCounts.push(row.total_clinical_exams);
+        pmCounts.push(row.total_postmortems);
+    });
+
+    const ctx = document.getElementById('jmoChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Total Caseload',
+                    data: data.map(d => d.total_caseload),
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(255, 159, 64, 0.6)',
+                        'rgba(153, 102, 255, 0.6)',
+                        'rgba(255, 99, 132, 0.6)'
+                    ]
+                }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+}
+
+async function loadPendingCases() {
+    const res = await window.lexmed.fetchAPI('/reports/pending');
+    if (!res.ok) throw new Error('Failed to fetch pending cases');
+    const { data } = await res.json();
+
+    const tbody = document.querySelector('#pendingTable tbody');
+    tbody.innerHTML = '';
+
+    if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">No pending cases.</td></tr>`;
+        return;
+    }
+
+    data.forEach(row => {
+        tbody.innerHTML += `
+            <tr>
+                <td><strong>${row.case_id}</strong></td>
+                <td>${row.case_type}</td>
+                <td>${new Date(row.created_at).toLocaleDateString()}</td>
+                <td><span class="badge bg-warning text-dark">${row.days_open} days</span></td>
+            </tr>
+        `;
+    });
+}
+
+async function loadAnomalies() {
+    const res = await window.lexmed.fetchAPI('/reports/evidence-anomalies');
+    if (!res.ok) throw new Error('Failed to fetch evidence anomalies');
+    const { data } = await res.json();
+
+    const tbody = document.querySelector('#anomaliesTable tbody');
+    tbody.innerHTML = '';
+
+    if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No anomalies found.</td></tr>`;
+        return;
+    }
+
+    data.forEach(row => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${row.item_id}</td>
+                <td>${row.case_id}</td>
+                <td>${row.item_type}</td>
+                <td>${row.description}</td>
+                <td>${new Date(row.case_created_at).toLocaleDateString()}</td>
+            </tr>
+        `;
+    });
+}

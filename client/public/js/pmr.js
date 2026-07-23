@@ -1,84 +1,96 @@
-document.addEventListener('DOMContentLoaded', () => {
-    
-    // --- Histology Samples Table Logic ---
-    const addSampleBtn = document.getElementById('addSampleBtn');
-    const samplesTbody = document.querySelector('#samplesTable tbody');
+document.addEventListener('lexmed:ready', () => {
+    const user = window.lexmed.user;
+    if (!user) return;
 
-    addSampleBtn.addEventListener('click', () => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td><input type="text" class="form-control form-control-sm sample-type" placeholder="e.g. Heart tissue" required></td>
-            <td><input type="text" class="form-control form-control-sm sample-result" placeholder="Pending / specific instructions" required></td>
-            <td><button type="button" class="btn btn-sm btn-danger remove-row">X</button></td>
-        `;
-        samplesTbody.appendChild(tr);
-    });
+    if (user.role !== 'jmo_role') {
+        document.querySelector('.container').innerHTML = `<div class="alert alert-danger mt-5">Access Denied. Only JMOs can fill out PMR.</div>`;
+        return;
+    }
 
-    // Global event listener for removing rows dynamically
-    document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('remove-row')) {
-            e.target.closest('tr').remove();
-        }
-    });
+    // Auto-fill JMO ID
+    const jmoInput = document.getElementById('jmoId');
+    if (jmoInput) {
+        jmoInput.value = user.user_id;
+        jmoInput.readOnly = true;
+    }
 
-    // --- Form Submission Logic ---
-    document.getElementById('pmrForm').addEventListener('submit', async (e) => {
+    // Pre-fill caseId if passed in URL
+    const params = new URLSearchParams(window.location.search);
+    const caseIdFromUrl = params.get('case_id');
+    if (caseIdFromUrl) {
+        document.getElementById('caseId').value = caseIdFromUrl;
+        document.getElementById('caseId').readOnly = true;
+    }
+
+    const form = document.getElementById('pmrForm');
+    const alertBox = document.getElementById('alert-box');
+
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const alertBox = document.getElementById('alert-box');
+
+        const caseId = document.getElementById('caseId').value;
+        const deathCategory = document.getElementById('deathCategory').value;
+        const autopsyDate = document.getElementById('pmDate').value;
+        const externalFindings = document.getElementById('externalFindings').value;
+        const internalFindings = document.getElementById('internalFindings').value;
         
-        // 1. Gather PMR General and COD Info
-        const payload = {
-            case_id: parseInt(document.getElementById('caseId').value),
-            jmo_id: parseInt(document.getElementById('jmoId').value),
-            death_category: document.getElementById('deathCategory').value,
-            pm_date: document.getElementById('pmDate').value,
-            
-            immediate_cause: document.getElementById('immediateCause').value,
-            antecedent_cause: document.getElementById('antecedentCause').value,
-            contributory: document.getElementById('contributory').value,
-            
-            histology_samples: []
-        };
+        const immediateCause = document.getElementById('immediateCause').value;
+        const antecedentCause = document.getElementById('antecedentCause').value;
+        const contributory = document.getElementById('contributory').value;
 
-        // 2. Gather Histology Samples
-        document.querySelectorAll('#samplesTable tbody tr').forEach(row => {
-            payload.histology_samples.push({
-                tissue_type: row.querySelector('.sample-type').value,
-                analysis_result: row.querySelector('.sample-result').value
-            });
-        });
+        // Note: the backend createPmr expects:
+        // case_id, death_category, autopsy_date, external_findings, internal_findings
 
-        // 3. POST via Fetch API
         try {
-            const response = await fetch('http://localhost:5005/api/pmr/submit', {
+            // 1. Create PMR
+            const pmrRes = await window.lexmed.fetchAPI('/clinical/postmortems', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({
+                    case_id: caseId,
+                    death_category: deathCategory,
+                    autopsy_date: autopsyDate,
+                    external_findings: externalFindings,
+                    internal_findings: internalFindings
+                })
             });
 
-            const result = await response.json();
+            const pmrData = await pmrRes.json();
 
-            if (result.success) {
-                alertBox.className = 'alert alert-success';
-                alertBox.textContent = `Success: ${result.message} (Postmortem ID: ${result.data.pm_id})`;
-                alertBox.classList.remove('d-none');
-                
-                // Reset form
-                document.getElementById('pmrForm').reset();
-                samplesTbody.innerHTML = '';
-                window.scrollTo(0, 0);
-            } else {
-                alertBox.className = 'alert alert-danger';
-                alertBox.textContent = `Error: ${result.message}`;
-                alertBox.classList.remove('d-none');
-                window.scrollTo(0, 0);
+            if (!pmrRes.ok) {
+                alertBox.className = 'alert alert-danger d-block';
+                alertBox.textContent = pmrData.error || 'Failed to submit PMR details';
+                return;
             }
-        } catch (error) {
-            console.error('Fetch error:', error);
-            alertBox.className = 'alert alert-danger';
-            alertBox.textContent = 'Network error. Make sure the backend server is running.';
-            alertBox.classList.remove('d-none');
-            window.scrollTo(0, 0);
+
+            const pmId = pmrData.pm_id;
+
+            // 2. Add COD
+            const codRes = await window.lexmed.fetchAPI(`/clinical/postmortems/${pmId}/cause-of-death`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    immediate_cause: immediateCause,
+                    antecedent_cause: antecedentCause,
+                    contributory: contributory
+                })
+            });
+
+            const codData = await codRes.json();
+
+            if (!codRes.ok) {
+                alertBox.className = 'alert alert-warning d-block';
+                alertBox.textContent = `PMR created (ID: ${pmId}), but COD failed: ${codData.error}`;
+            } else {
+                alertBox.className = 'alert alert-success d-block';
+                alertBox.textContent = `PMR and Cause of Death recorded successfully! (PMR ID: ${pmId})`;
+                form.reset();
+                if(caseIdFromUrl) document.getElementById('caseId').value = caseIdFromUrl;
+                document.getElementById('jmoId').value = user.user_id;
+            }
+
+        } catch (err) {
+            console.error(err);
+            alertBox.className = 'alert alert-danger d-block';
+            alertBox.textContent = 'Server error.';
         }
     });
 });

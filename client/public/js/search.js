@@ -1,51 +1,64 @@
-document.addEventListener('DOMContentLoaded', () => {
-    
-    document.getElementById('searchForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const query = document.getElementById('searchInput').value.trim();
-        const resultsContainer = document.getElementById('resultsContainer');
-        const tbody = document.querySelector('#resultsTable tbody');
-        const noResults = document.getElementById('noResults');
+document.addEventListener('lexmed:ready', () => {
+    const user = window.lexmed.user;
+    if (!user) return;
 
-        if (!query) return;
+    const form = document.getElementById('searchForm');
+    const input = document.getElementById('searchInput');
+    const container = document.getElementById('resultsContainer');
+    const noResults = document.getElementById('noResults');
+    const tbody = document.querySelector('#resultsTable tbody');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const query = input.value.trim().toLowerCase();
 
         try {
-            const response = await fetch(`http://localhost:5005/api/search?q=\${encodeURIComponent(query)}`);
-            const result = await response.json();
+            // For this phase, we fetch all cases and filter on the frontend for demo purposes.
+            // In production, we'd pass query params: /cases?search=query
+            const res = await window.lexmed.fetchAPI('/cases');
+            if (!res.ok) throw new Error('Failed to fetch cases');
+            
+            const cases = await res.json();
+            
+            const filtered = cases.filter(c => {
+                return (
+                    (c.case_number && c.case_number.toLowerCase().includes(query)) ||
+                    (c.case_id && c.case_id.toString() === query) ||
+                    (c.patient_name_encrypted && c.patient_name_encrypted.toLowerCase().includes(query)) ||
+                    (c.patient_name && c.patient_name.toLowerCase().includes(query))
+                );
+            });
 
-            resultsContainer.classList.remove('d-none');
+            container.classList.remove('d-none');
             tbody.innerHTML = '';
-            noResults.classList.add('d-none');
 
-            if (result.success && result.data.length > 0) {
-                result.data.forEach(item => {
+            if (filtered.length === 0) {
+                noResults.classList.remove('d-none');
+                document.querySelector('.table-responsive').classList.add('d-none');
+            } else {
+                noResults.classList.add('d-none');
+                document.querySelector('.table-responsive').classList.remove('d-none');
+                
+                filtered.forEach(c => {
                     const tr = document.createElement('tr');
-                    
-                    const date = new Date(item.incident_time).toLocaleDateString();
-                    
-                    // Route the "View" button depending on the case type
-                    let viewLink = '#';
-                    if(item.case_type === 'Clinical Exam') viewLink = 'mlef-form.html';
-                    if(item.case_type === 'Postmortem') viewLink = 'pmr-form.html';
-
                     tr.innerHTML = `
-                        <td><strong>#\${item.case_id}</strong></td>
-                        <td><span class="badge \${item.case_type === 'Postmortem' ? 'bg-success' : 'bg-primary'}">\${item.case_type}</span></td>
-                        <td>\${item.status}</td>
-                        <td>\${item.first_name}</td>
-                        <td>\${item.nic_passport}</td>
-                        <td>\${date}</td>
-                        <td><a href="\${viewLink}" class="btn btn-sm btn-outline-dark">Open</a></td>
+                        <td><strong>${c.case_number || c.case_id}</strong></td>
+                        <td>${c.case_type}</td>
+                        <td><span class="badge bg-secondary">Open</span></td>
+                        <td>${c.patient_name || c.patient_name_encrypted || 'REDACTED'}</td>
+                        <td>${c.patient_nic_encrypted || 'REDACTED'}</td>
+                        <td>${new Date(c.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <a href="pending-case.html?case_id=${c.case_id}" class="btn btn-sm btn-outline-primary">View Timeline</a>
+                            <a href="reports.html?case_id=${c.case_id}" class="btn btn-sm btn-outline-success">Print Report</a>
+                        </td>
                     `;
                     tbody.appendChild(tr);
                 });
-            } else {
-                noResults.classList.remove('d-none');
             }
-        } catch (error) {
-            console.error('Search error', error);
-            alert('Failed to connect to search server');
+        } catch (err) {
+            console.error(err);
+            alert('Error performing search.');
         }
     });
-
 });

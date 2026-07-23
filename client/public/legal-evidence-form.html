@@ -24,15 +24,58 @@
     </nav>
 
     <div class="container mt-5 mb-5">
-        <h3 class="mb-4" style="color: #fd7e14;">Module 7: Law & Evidence</h3>
+        <h3 class="mb-4" style="color: #fd7e14;">Chain of Custody Timeline</h3>
         <div id="alert-box" class="alert d-none" role="alert"></div>
 
         <div class="row">
-            <!-- Evidence Item -->
-            <div class="col-md-6">
+            <!-- Timeline Display -->
+            <div class="col-md-7">
                 <div class="form-card border-top border-4" style="border-color: #fd7e14 !important;">
-                    <h5 class="section-title">1. Log Evidence Item</h5>
-                    <form id="evidenceForm">
+                    <h5 class="section-title">Evidence Item Custody Trail</h5>
+                    
+                    <div class="input-group mb-4">
+                        <input type="number" id="searchItemId" class="form-control" placeholder="Enter Evidence Item ID to view trail">
+                        <button class="btn btn-outline-secondary" id="searchItemBtn" type="button">Load Trail</button>
+                    </div>
+
+                    <ul class="list-group list-group-flush timeline-list" id="custodyTimeline">
+                        <li class="list-group-item text-muted">Enter an Item ID to view its custody chain.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Transfer Form -->
+            <div class="col-md-5">
+                <div class="form-card border-top border-4" style="border-color: #fd7e14 !important;">
+                    <h5 class="section-title">Log New Transfer</h5>
+                    <form id="transferForm">
+                        <div class="mb-3">
+                            <label class="form-label">Evidence Item ID</label>
+                            <input type="number" id="transferItemId" class="form-control" required readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Released By (User ID)</label>
+                            <input type="number" id="releasedBy" class="form-control" required readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Received By (Name / Authority)</label>
+                            <input type="text" id="receivedBy" class="form-control" required placeholder="e.g. Officer Smith">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">New Status</label>
+                            <select id="newStatus" class="form-select" required>
+                                <option value="Retained">Retained</option>
+                                <option value="Transferred">Transferred</option>
+                                <option value="Released">Released</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn w-100 text-white" style="background-color: #fd7e14;" id="submitTransferBtn" disabled>Log Transfer</button>
+                    </form>
+                </div>
+                
+                <div class="form-card border-top border-4 mt-4" style="border-color: #0dcaf0 !important;">
+                    <h5 class="section-title text-info">Register New Evidence</h5>
+                    <form id="newEvidenceForm">
                         <div class="mb-3">
                             <label class="form-label">Case ID</label>
                             <input type="number" id="evCaseId" class="form-control" required>
@@ -45,92 +88,14 @@
                             <label class="form-label">Description</label>
                             <textarea id="evDesc" class="form-control" rows="2"></textarea>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Status</label>
-                            <select id="evStatus" class="form-select" required>
-                                <option value="Retained">Retained</option>
-                                <option value="Transferred">Transferred to Lab</option>
-                                <option value="Released">Released to Police</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn w-100 text-white" style="background-color: #fd7e14;">Add Evidence</button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Chain of Custody -->
-            <div class="col-md-6">
-                <div class="form-card border-top border-4" style="border-color: #fd7e14 !important;">
-                    <h5 class="section-title">2. Chain of Custody Transfer</h5>
-                    <form id="custodyForm">
-                        <div class="mb-3">
-                            <label class="form-label">Evidence Item ID</label>
-                            <input type="number" id="cocItemId" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Released By (User ID)</label>
-                            <input type="number" id="cocReleasedBy" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Received By (Name / Authority)</label>
-                            <input type="text" id="cocReceivedBy" class="form-control" required>
-                        </div>
-                        <button type="submit" class="btn w-100 text-white" style="background-color: #fd7e14;">Log Transfer</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <!-- Court Summons -->
-            <div class="col-md-6">
-                <div class="form-card border-top border-4" style="border-color: #fd7e14 !important;">
-                    <h5 class="section-title">3. Court Summons</h5>
-                    <form id="summonsForm">
-                        <div class="mb-3">
-                            <label class="form-label">JMO ID</label>
-                            <input type="number" id="sumJmoId" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Case ID</label>
-                            <input type="number" id="sumCaseId" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Appearance Date</label>
-                            <input type="date" id="sumDate" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Status</label>
-                            <input type="text" id="sumStatus" class="form-control" placeholder="Pending, Attended">
-                        </div>
-                        <button type="submit" class="btn w-100 text-white" style="background-color: #fd7e14;">Log Summons</button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Legal Documents -->
-            <div class="col-md-6">
-                <div class="form-card border-top border-4" style="border-color: #fd7e14 !important;">
-                    <h5 class="section-title">4. Legal Documents</h5>
-                    <form id="documentForm">
-                        <div class="mb-3">
-                            <label class="form-label">Case ID</label>
-                            <input type="number" id="docCaseId" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Document Type (Inquest, Court Order)</label>
-                            <input type="text" id="docType" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Reference Number</label>
-                            <input type="text" id="docRef" class="form-control" required>
-                        </div>
-                        <button type="submit" class="btn w-100 text-white" style="background-color: #fd7e14;">Add Document</button>
+                        <button type="submit" class="btn w-100 text-white btn-info">Add Evidence Item</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+    
+    <script src="js/app.js"></script>
 
     <script src="js/legal-evidence.js"></script>
 </body>
